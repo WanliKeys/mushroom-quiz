@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>哪几个菌类不能进汤锅？</title>
+    <style>
+        /* UI 色彩与排版设定（呼应海报的绿色调） */
+        :root {
+            --bg-color: #F7F9F7; /* 极简浅灰绿背景 */
+            --text-color: #333333;
+            --card-bg: #FFFFFF;
+            --accent-color: #3A6635; /* 海报底部的深绿色 */
+            --danger-color: #D32F2F; /* 错误/中毒色 */
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100%;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        /* 顶部海报图占位 */
+        .header-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            /* [在此替换顶部图片]：如果没有图片，可以删除这一行，直接用纯色或不要头图 */
+            background-color: #E0E7E0; 
+            aspect-ratio: 16 / 9;
+            background-size: cover;
+            background-position: center;
+            /* background-image: url('你的海报链接.jpg'); */
+        }
+
+        h1 { font-size: 24px; margin-bottom: 10px; color: var(--accent-color); }
+        p.subtitle { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5; }
+
+        /* 10个选项的双列布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .mushroom-card {
+            background-color: var(--card-bg);
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 15px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* 选中状态 */
+        .mushroom-card.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(58, 102, 53, 0.1);
+            color: var(--accent-color);
+        }
+
+        .mushroom-card.selected::after {
+            content: '✔';
+            position: absolute;
+            top: 5px; right: 8px;
+            font-size: 14px;
+            color: var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 0;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 10px rgba(58, 102, 53, 0.3);
+        }
+        .btn:active { opacity: 0.8; transform: translateY(1px); }
+
+        .hidden { display: none !important; }
+
+        /* 结果页样式 */
+        .result-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-bg { background-color: #F0F7F0; }
+        .success-text { color: var(--accent-color); font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+        .coupon-box { 
+            background: white; border: 2px dashed var(--accent-color); 
+            padding: 30px 20px; border-radius: 12px; margin: 30px 0; width: 80%;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .fail-bg { 
+            background: linear-gradient(135deg, #1a1a1a, #2c003e);
+            color: white;
+        }
+        .fail-text { font-size: 32px; font-weight: 900; color: #FF4081; margin-bottom: 15px; text-shadow: 2px 2px 0px #000;}
+        
+    </style>
+</head>
+<body>
+
+    <div id="quiz-page" class="container">
+        <div class="header-image"></div>
+        
+        <h1>哪几个菌类不能进汤锅？</h1>
+        <p class="subtitle">海报安检仪发现了 4 个有毒菌<br>请全部找出，答对即可获赠【爱尚菌菜品】！</p >
+        
+        <div class="grid" id="grid">
+            </div>
+
+        <button class="btn" onclick="submitAnswers()">确认拦截，提交答案</button>
+    </div>
+
+    <div id="success-page" class="container result-page success-bg hidden">
+        <div class="success-text">拦截成功！</div>
+        <p style="color: #666;">恭喜你，火锅安全了！</p >
+        
+        <div class="coupon-box">
+            <h2 style="color: var(--accent-color); margin-top:0;">获赠爱尚菌菜品一份</h2>
+            <p style="font-size: 14px; color: #888; margin-bottom: 20px;">请妥善截图，凭此页面向店员兑换</p >
+            
+            <p style="font-size: 12px; color: #aaa; margin-top: 15px;">* 最终解释权归爱尚菌所有</p >
+        </div>
+        <button class="btn" onclick="resetQuiz()">再玩一次</button>
+    </div>
+
+    <div id="fail-page" class="container result-page fail-bg hidden">
+        <div class="fail-text">警 告 ！<br>毒菌已下锅！</div>
+        <p style="font-size: 18px; line-height: 1.6;">哎呀，你漏掉了毒蘑菇...<br>看见小人跳舞了吗？</p >
+        
+        <button class="btn" style="background-color: #FF4081; margin-top: 40px; box-shadow: none;" onclick="resetQuiz()">洗胃重来 (重新答题)</button>
+    </div>
+
+    <script>
+        // 【核心数据配置区】
+        const mushroomsData = [
+            { id: 1, name: '牛肝菌' },
+            { id: 2, name: '白毒伞' },
+            { id: 3, name: '青头菌' },
+            { id: 4, name: '黄牛肝菌' },
+            { id: 5, name: '毒蝇伞' },
+            { id: 6, name: '大青褶伞' },
+            { id: 7, name: '鸡枞菌' },
+            { id: 8, name: '豹斑鹅膏' },
+            { id: 9, name: '鸡油菌' },
+            { id: 10, name: '虎掌菌' }
+        ];
+
+        // 设定正确答案（编号 2, 5, 6, 8 有毒）
+        const correctAnswers = [2, 5, 6, 8]; 
+        let selectedAnswers = [];
+
+        // 初始化渲染蘑菇网格
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            mushroomsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'mushroom-card';
+                // 显示格式： 1. 牛肝菌
+                card.innerText = `${item.id}. ${item.name}`; 
+                card.onclick = () => toggleSelect(item.id, card);
+                grid.appendChild(card);
+            });
+        }
+
+        // 选中/取消选中逻辑
+        function toggleSelect(id, element) {
+            const index = selectedAnswers.indexOf(id);
+            if (index > -1) {
+                // 已选中，则取消
+                selectedAnswers.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                // 限制最多只能选 4 个
+                if (selectedAnswers.length >= 4) {
+                    alert('只能选择 4 种有毒的菌类哦！');
+                    return;
+                }
+                selectedAnswers.push(id);
+                element.classList.add('selected');
+            }
+        }
+
+        // 提交答案判定逻辑
+        function submitAnswers() {
+            if (selectedAnswers.length !== 4) {
+                alert('请务必选满 4 种你认为有毒的菌类！');
+                return;
+            }
+
+            // 对比数组内容是否完全一致（不考虑点击顺序）
+            const isCorrect = correctAnswers.slice().sort().every(function(value, index) {
+                return value === selectedAnswers.slice().sort()[index];
+            });
+
+            document.getElementById('quiz-page').classList.add('hidden');
+
+            if (isCorrect) {
+                document.getElementById('success-page').classList.remove('hidden');
+            } else {
+                document.getElementById('fail-page').classList.remove('hidden');
+            }
+        }
+
+        // 重置游戏
+        function resetQuiz() {
+            selectedAnswers = [];
+            document.getElementById('success-page').classList.add('hidden');
+            document.getElementById('fail-page').classList.add('hidden');
+            document.getElementById('quiz-page').classList.remove('hidden');
+            initGrid();
+        }
+
+        // 启动应用
+        initGrid();
+    </script>
+</body>
+</html>
