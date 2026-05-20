@@ -139,20 +139,31 @@
         #success-image,
         #fail-image { cursor: pointer; }
 
-        .session-code {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 8px;
-            z-index: 20;
-            text-align: center;
-            font-size: 11px;
-            letter-spacing: 1px;
-            color: rgba(51, 51, 51, 0.55);
-            pointer-events: none;
+        .success-result-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
         }
 
-        .fail-bg .session-code { color: rgba(255, 255, 255, 0.68); }
+        .success-result-wrap .result-image {
+            max-width: none;
+            margin-bottom: 0;
+        }
+
+        .success-code {
+            position: absolute;
+            left: 12%;
+            right: 12%;
+            top: 85.5%;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #3A6635;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+            pointer-events: none;
+        }
         
     </style>
 </head>
@@ -174,14 +185,15 @@
     </div>
 
     <div id="success-page" class="container result-page success-bg hidden">
-        <img id="success-image" class="result-image" data-src-webp="success.webp" data-src="success.jpg" width="720" height="1279" alt="答对后奖励页面，点击再玩一次" decoding="async" onclick="resetQuiz()">
+        <div class="success-result-wrap">
+            <img id="success-image" class="result-image" data-src-webp="success.webp" data-src="success.jpg" width="720" height="1279" alt="答对后奖励页面，点击再玩一次" decoding="async" onclick="resetQuiz()">
+            <div id="success-code" class="success-code"></div>
+        </div>
     </div>
 
     <div id="fail-page" class="container result-page fail-bg hidden">
         <img id="fail-image" class="result-image" data-src-webp="fail.webp" data-src="fail.jpg" width="720" height="1279" alt="答错后提示页面，点击重新答题" decoding="async" onclick="resetQuiz()">
     </div>
-
-    <div id="session-code" class="session-code"></div>
 
     <script>
         // 【核心数据配置区】
@@ -333,7 +345,7 @@
         }
 
         // 启动应用
-        document.getElementById('session-code').innerText = sessionCode;
+        document.getElementById('success-code').innerText = sessionCode;
         initGrid();
     </script>
 </body>
