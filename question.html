@@ -32,17 +32,13 @@
             box-sizing: border-box;
         }
 
-        /* 顶部海报图占位 */
+        /* 顶部海报图 */
         .header-image {
             width: 100%;
             border-radius: 12px;
             margin-bottom: 20px;
-            /* [在此替换顶部图片]：如果没有图片，可以删除这一行，直接用纯色或不要头图 */
-            background-color: #E0E7E0; 
-            aspect-ratio: 16 / 9;
-            background-size: cover;
-            background-position: center;
-            /* background-image: url('你的海报链接.jpg'); */
+            display: block;
+            height: auto;
         }
 
         h1 { font-size: 24px; margin-bottom: 10px; color: var(--accent-color); }
@@ -129,13 +125,22 @@
             color: white;
         }
         .fail-text { font-size: 32px; font-weight: 900; color: #FF4081; margin-bottom: 15px; text-shadow: 2px 2px 0px #000;}
+
+        .result-image {
+            width: 100%;
+            max-width: 420px;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+            margin: 0 auto 20px;
+        }
         
     </style>
 </head>
 <body>
 
     <div id="quiz-page" class="container">
-        <div class="header-image"></div>
+        <img class="header-image" src="main.jpg" alt="哪几个菌类不能进汤锅活动主图" loading="eager" decoding="async">
         
         <h1>哪几个菌类不能进汤锅？</h1>
         <p class="subtitle">海报安检仪发现了 4 个有毒菌<br>请全部找出，答对即可获赠【爱尚菌菜品】！</p >
@@ -147,6 +152,7 @@
     </div>
 
     <div id="success-page" class="container result-page success-bg hidden">
+        <img id="success-image" class="result-image" data-src="success.jpg" alt="答对后奖励页面" decoding="async">
         <div class="success-text">拦截成功！</div>
         <p style="color: #666;">恭喜你，火锅安全了！</p >
         
@@ -160,6 +166,7 @@
     </div>
 
     <div id="fail-page" class="container result-page fail-bg hidden">
+        <img id="fail-image" class="result-image" data-src="fail.jpg" alt="答错后提示页面" decoding="async">
         <div class="fail-text">警 告 ！<br>毒菌已下锅！</div>
         <p style="font-size: 18px; line-height: 1.6;">哎呀，你漏掉了毒蘑菇...<br>看见小人跳舞了吗？</p >
         
@@ -233,9 +240,18 @@
             document.getElementById('quiz-page').classList.add('hidden');
 
             if (isCorrect) {
+                loadResultImage('success-image');
                 document.getElementById('success-page').classList.remove('hidden');
             } else {
+                loadResultImage('fail-image');
                 document.getElementById('fail-page').classList.remove('hidden');
+            }
+        }
+
+        function loadResultImage(id) {
+            const image = document.getElementById(id);
+            if (!image.src) {
+                image.src = image.dataset.src;
             }
         }
 
