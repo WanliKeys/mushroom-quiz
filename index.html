@@ -138,6 +138,21 @@
 
         #success-image,
         #fail-image { cursor: pointer; }
+
+        .session-code {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 8px;
+            z-index: 20;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: rgba(51, 51, 51, 0.55);
+            pointer-events: none;
+        }
+
+        .fail-bg .session-code { color: rgba(255, 255, 255, 0.68); }
         
     </style>
 </head>
@@ -166,6 +181,8 @@
         <img id="fail-image" class="result-image" data-src-webp="fail.webp" data-src="fail.jpg" width="720" height="1279" alt="答错后提示页面，点击重新答题" decoding="async" onclick="resetQuiz()">
     </div>
 
+    <div id="session-code" class="session-code"></div>
+
     <script>
         // 【核心数据配置区】
         const mushroomsData = [
@@ -184,6 +201,7 @@
         // 设定正确答案（编号 2, 5, 6, 8 有毒）
         const correctAnswers = [2, 5, 6, 8]; 
         let selectedAnswers = [];
+        const sessionCode = generateSessionCode();
 
         // 初始化渲染蘑菇网格
         function initGrid() {
@@ -233,11 +251,48 @@
             document.getElementById('quiz-page').classList.add('hidden');
 
             if (isCorrect) {
+                playResultSound(true);
                 loadResultImage('success-image');
                 document.getElementById('success-page').classList.remove('hidden');
             } else {
+                playResultSound(false);
                 loadResultImage('fail-image');
                 document.getElementById('fail-page').classList.remove('hidden');
+            }
+        }
+
+        function playResultSound(isCorrect) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+
+                const context = new AudioContext();
+                const now = context.currentTime;
+                const frequencies = isCorrect ? [523.25, 659.25, 783.99] : [220, 164.81, 110];
+
+                frequencies.forEach(function(frequency, index) {
+                    const oscillator = context.createOscillator();
+                    const gain = context.createGain();
+                    const start = now + index * 0.09;
+                    const end = start + 0.12;
+
+                    oscillator.type = isCorrect ? 'sine' : 'triangle';
+                    oscillator.frequency.setValueAtTime(frequency, start);
+                    gain.gain.setValueAtTime(0.0001, start);
+                    gain.gain.exponentialRampToValueAtTime(0.18, start + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+
+                    oscillator.connect(gain);
+                    gain.connect(context.destination);
+                    oscillator.start(start);
+                    oscillator.stop(end);
+                });
+
+                setTimeout(function() {
+                    context.close().catch(function() {});
+                }, 600);
+            } catch (error) {
+                // Some in-app browsers block audio; quiz flow should continue.
             }
         }
 
@@ -253,6 +308,21 @@
             return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
         }
 
+        function generateSessionCode() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let suffix = '';
+
+            for (let i = 0; i < 6; i++) {
+                suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
+            }
+
+            return `ASJ-${year}${month}${day}-${suffix}`;
+        }
+
         // 重置游戏
         function resetQuiz() {
             selectedAnswers = [];
@@ -263,6 +333,7 @@
         }
 
         // 启动应用
+        document.getElementById('session-code').innerText = sessionCode;
         initGrid();
     </script>
 </body>
