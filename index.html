@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>哪几个菌类不能进汤锅？</title>
+    <link rel="preload" as="image" href="main.webp" type="image/webp">
     <style>
         /* UI 色彩与排版设定（呼应海报的绿色调） */
         :root {
@@ -143,7 +144,10 @@
 <body>
 
     <div id="quiz-page" class="container">
-        <img class="header-image" src="main.jpg" alt="哪几个菌类不能进汤锅活动主图" loading="eager" decoding="async">
+        <picture>
+            <source srcset="main.webp" type="image/webp">
+            <img class="header-image" src="main.jpg" width="900" height="550" alt="哪几个菌类不能进汤锅活动主图" loading="eager" decoding="async">
+        </picture>
         
         <h1>哪几个菌类不能进汤锅？</h1>
         <p class="subtitle">海报安检仪发现了 4 个有毒菌<br>请全部找出，答对即可获赠【爱尚菌菜品】！</p >
@@ -155,11 +159,11 @@
     </div>
 
     <div id="success-page" class="container result-page success-bg hidden">
-        <img id="success-image" class="result-image" data-src="success.jpg" alt="答对后奖励页面，点击再玩一次" decoding="async" onclick="resetQuiz()">
+        <img id="success-image" class="result-image" data-src-webp="success.webp" data-src="success.jpg" width="720" height="1279" alt="答对后奖励页面，点击再玩一次" decoding="async" onclick="resetQuiz()">
     </div>
 
     <div id="fail-page" class="container result-page fail-bg hidden">
-        <img id="fail-image" class="result-image" data-src="fail.jpg" alt="答错后提示页面，点击重新答题" decoding="async" onclick="resetQuiz()">
+        <img id="fail-image" class="result-image" data-src-webp="fail.webp" data-src="fail.jpg" width="720" height="1279" alt="答错后提示页面，点击重新答题" decoding="async" onclick="resetQuiz()">
     </div>
 
     <script>
@@ -240,8 +244,13 @@
         function loadResultImage(id) {
             const image = document.getElementById(id);
             if (!image.src) {
-                image.src = image.dataset.src;
+                image.src = supportsWebp() ? image.dataset.srcWebp : image.dataset.src;
             }
+        }
+
+        function supportsWebp() {
+            const canvas = document.createElement('canvas');
+            return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
         }
 
         // 重置游戏
