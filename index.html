@@ -134,6 +134,8 @@
             border-radius: 12px;
             margin: 0 auto 20px;
         }
+
+        #fail-image { cursor: pointer; }
         
     </style>
 </head>
@@ -166,8 +168,7 @@
     </div>
 
     <div id="fail-page" class="container result-page fail-bg hidden">
-        <img id="fail-image" class="result-image" data-src="fail.jpg" alt="答错后提示页面" decoding="async">
-        <button class="btn" style="background-color: #FF4081; margin-top: 40px; box-shadow: none;" onclick="resetQuiz()">洗胃重来 (重新答题)</button>
+        <img id="fail-image" class="result-image" data-src="fail.jpg" alt="答错后提示页面，点击重新答题" decoding="async" onclick="resetQuiz()">
     </div>
 
     <script>
