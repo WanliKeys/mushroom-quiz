@@ -57,7 +57,8 @@
             background-color: var(--card-bg);
             border: 2px solid #E0E0E0;
             border-radius: 8px;
-            padding: 15px 10px;
+            padding: 0;
+            aspect-ratio: 1 / 1;
             font-size: 16px;
             font-weight: bold;
             color: #555;
@@ -68,7 +69,22 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background-image: url('choices.webp');
+            background-size: 500% 200%;
+            background-repeat: no-repeat;
+            overflow: hidden;
         }
+
+        .mushroom-card.option-1 { background-position: 0% 0%; }
+        .mushroom-card.option-2 { background-position: 25% 0%; }
+        .mushroom-card.option-3 { background-position: 50% 0%; }
+        .mushroom-card.option-4 { background-position: 75% 0%; }
+        .mushroom-card.option-5 { background-position: 100% 0%; }
+        .mushroom-card.option-6 { background-position: 0% 100%; }
+        .mushroom-card.option-7 { background-position: 25% 100%; }
+        .mushroom-card.option-8 { background-position: 50% 100%; }
+        .mushroom-card.option-9 { background-position: 75% 100%; }
+        .mushroom-card.option-10 { background-position: 100% 100%; }
 
         /* 选中状态 */
         .mushroom-card.selected {
@@ -227,9 +243,9 @@
             
             mushroomsData.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'mushroom-card';
-                // 显示格式： 1. 牛肝菌
-                card.innerText = `${item.id}. ${item.name}`; 
+                card.className = `mushroom-card option-${item.id}`;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', `${item.id}. ${item.name}`);
                 card.onclick = () => toggleSelect(item.id, card);
                 grid.appendChild(card);
             });
