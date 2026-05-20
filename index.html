@@ -153,8 +153,8 @@
 
         .success-code {
             position: absolute;
-            left: 20%;
-            right: 34%;
+            left: 24%;
+            right: 24%;
             top: 88.1%;
             text-align: center;
             font-size: 10px;
@@ -215,6 +215,10 @@
         const correctAnswers = [2, 5, 6, 8]; 
         let selectedAnswers = [];
         const sessionCode = generateSessionCode();
+        const successAudio = new Audio('答对了.mp3');
+        const failAudio = new Audio('答错了.mp3');
+        successAudio.preload = 'auto';
+        failAudio.preload = 'auto';
 
         // 初始化渲染蘑菇网格
         function initGrid() {
@@ -276,34 +280,10 @@
 
         function playResultSound(isCorrect) {
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-
-                const context = new AudioContext();
-                const now = context.currentTime;
-                const frequencies = isCorrect ? [523.25, 659.25, 783.99] : [220, 164.81, 110];
-
-                frequencies.forEach(function(frequency, index) {
-                    const oscillator = context.createOscillator();
-                    const gain = context.createGain();
-                    const start = now + index * 0.09;
-                    const end = start + 0.12;
-
-                    oscillator.type = isCorrect ? 'sine' : 'triangle';
-                    oscillator.frequency.setValueAtTime(frequency, start);
-                    gain.gain.setValueAtTime(0.0001, start);
-                    gain.gain.exponentialRampToValueAtTime(0.18, start + 0.015);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, end);
-
-                    oscillator.connect(gain);
-                    gain.connect(context.destination);
-                    oscillator.start(start);
-                    oscillator.stop(end);
-                });
-
-                setTimeout(function() {
-                    context.close().catch(function() {});
-                }, 600);
+                const audio = isCorrect ? successAudio : failAudio;
+                audio.pause();
+                audio.currentTime = 0;
+                audio.play().catch(function() {});
             } catch (error) {
                 // Some in-app browsers block audio; quiz flow should continue.
             }
