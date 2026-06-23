@@ -89,7 +89,6 @@
         <button class="hotspot result-draw" data-action="draw" aria-label="每日抽奖"></button>
         <div id="drawStatus" class="draw-status" aria-live="polite">今日已抽 · 明天再来</div>
         <button class="hotspot result-replay" data-action="result-action" aria-label="再玩一次"></button>
-        <div id="resultClaimCode" class="result-claim-code" aria-label="领取码"></div>
         <button class="hotspot result-reward-card" data-action="claim" aria-label="查看兑奖信息"></button>
         <div id="claimPanel" class="modal hidden">
           <div class="wood-modal claim-modal">
@@ -108,6 +107,7 @@
             <h2 id="drawTitle">每日幸运抽奖</h2>
             <p id="drawCopy">完成第一关后，每人每天可抽奖 1 次。</p>
             <div id="rewardCodeBox" class="code-box is-hidden">兑奖码：<b id="rewardCode">ASJ000000</b></div>
+            <small class="draw-rule">中奖概率为 1%，奖品为 100 元抵扣券。使用规则以门店活动说明为准。</small>
             <button id="drawCloseButton" data-action="close-draw">我知道了</button>
           </div>
         </div>
@@ -165,5 +165,8 @@
     </section>
   </main>
   <script src="app.js"></script>
+<script>
+setTimeout(()=>document.querySelector('[data-action="start"]')?.click(),1400);
+</script>
 </body>
 </html>
