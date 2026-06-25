@@ -25,6 +25,7 @@
   const mushroomRewardBadge = document.getElementById('mushroomRewardBadge');
   const resultClaimCode = document.getElementById('resultClaimCode');
   const DAILY_DRAW_KEY = 'asjDailyDrawV2';
+  const DAILY_DRAW_LIMIT = 3;
   const CLAIM_CODE_KEY = 'asjRewardClaimCodeV1';
   const RESULT_ARTWORK_URLS = {
     result_partial: 'assets/result_partial.webp',
@@ -678,6 +679,42 @@
     storageSet(DAILY_DRAW_KEY,JSON.stringify(record));
   }
 
+  function getTodayDrawAttempts(){
+    const record=readDailyDrawRecord();
+    if(record?.date!==localDayKey()) return [];
+    if(Array.isArray(record.attempts)) return record.attempts;
+    return record.drawnAt ? [record] : [];
+  }
+
+  function getTodayDrawCount(){
+    return getTodayDrawAttempts().length;
+  }
+
+  function getRemainingDrawCount(){
+    return Math.max(0,DAILY_DRAW_LIMIT-getTodayDrawCount());
+  }
+
+  function getTodayWinningAttempt(){
+    return getTodayDrawAttempts().find(attempt => attempt?.won && attempt.code) || null;
+  }
+
+  function getLatestTodayDrawAttempt(){
+    const attempts=getTodayDrawAttempts();
+    return attempts[attempts.length-1] || null;
+  }
+
+  function appendTodayDrawAttempt(attempt){
+    const today=localDayKey();
+    const existing=readDailyDrawRecord();
+    const attempts=existing?.date===today && Array.isArray(existing.attempts)
+      ? existing.attempts.slice()
+      : getTodayDrawAttempts();
+    attempts.push(attempt);
+    const record={date:today,attempts,drawnAt:attempt.drawnAt,won:attempt.won,code:attempt.code || ''};
+    writeDailyDrawRecord(record);
+    return record;
+  }
+
   function randomUnit(){
     if(window.crypto?.getRandomValues){
       const n=new Uint32Array(1);window.crypto.getRandomValues(n);return n[0]/4294967296;
@@ -724,33 +761,34 @@
   }
 
   function getTodayDrawRecord(){
-    const record=readDailyDrawRecord();
-    return record?.date===localDayKey() ? record : null;
+    return getLatestTodayDrawAttempt();
   }
 
   function updateLevelDrawButton(){
     if(!levelDrawButton) return;
     const eligible=state.firstLevelCompleted;
-    const used=Boolean(getTodayDrawRecord());
+    const remaining=getRemainingDrawCount();
+    const used=remaining<=0;
     levelDrawButton.classList.toggle('is-hidden',!eligible);
-    levelDrawButton.textContent=used?'查看今日抽奖结果':'立即抽奖（每日1次）';
+    levelDrawButton.textContent=used?'查看今日抽奖结果':`立即抽奖（今日剩余${remaining}次）`;
     const continueButton=document.getElementById('continueButton');
     if(continueButton) continueButton.classList.toggle('secondary',eligible);
   }
 
   function applyResultArtwork(){
-    const used=Boolean(getTodayDrawRecord());
+    const used=getRemainingDrawCount()<=0;
     const key=(state.resultArtwork || 'result_partial')+(used?'_draw_used':'');
     const artworkUrl=RESULT_ARTWORK_URLS[key] || RESULT_ARTWORK_URLS.result_partial;
     result.style.setProperty('--bg',`url('${artworkUrl}')`);
   }
 
   function updateDailyDrawUI(){
-    const used=Boolean(getTodayDrawRecord());
+    const remaining=getRemainingDrawCount();
+    const used=remaining<=0;
     result.classList.toggle('draw-used',used);
-    if(drawStatus) drawStatus.textContent=used?'今日已抽 · 明日再来':'立即抽奖';
+    if(drawStatus) drawStatus.textContent=used?'今日已抽完 · 明日再来':`今日剩余 ${remaining} 次`;
     const button=document.querySelector('.result-draw');
-    if(button) button.setAttribute('aria-label',used?'今日已抽，明日再来':'每日幸运抽奖');
+    if(button) button.setAttribute('aria-label',used?'今日抽奖机会已用完，明日再来':`每日幸运抽奖，今日剩余${remaining}次`);
     applyResultArtwork();
     updateLevelDrawButton();
   }
@@ -768,16 +806,16 @@
 
   function openDraw(){
     if(!state.firstLevelCompleted){
-      setDrawModal({icon:'🎮',title:'先完成第一关',copy:'成功通过第一关后，即可获得今天的抽奖机会。'});
+      setDrawModal({icon:'🎮',title:'先完成第一关',copy:`成功通过第一关后，即可获得今天的 ${DAILY_DRAW_LIMIT} 次抽奖机会。`});
       return;
     }
 
-    const existing=getTodayDrawRecord();
-    if(existing){
-      setDrawModal(existing.won?{
-        icon:'🎫',title:'今日已抽过',copy:'你今天已经抽中100元抵扣券，兑奖码已为你保留。',code:existing.code,button:'查看完毕'
+    if(getTodayDrawCount()>=DAILY_DRAW_LIMIT){
+      const winning=getTodayWinningAttempt();
+      setDrawModal(winning?{
+        icon:'🎫',title:'今日机会已用完',copy:'你今天已抽中100元抵扣券，兑奖码已为你保留。',code:winning.code,button:'查看完毕'
       }:{
-        icon:'🍄',title:'今日抽奖机会已使用',copy:'你今天已经参与过抽奖，明天再来试试菌运。'
+        icon:'🍄',title:'今日抽奖机会已用完',copy:'你今天的3次抽奖机会已经用完，明天再来试试菌运。'
       });
       updateDailyDrawUI();
       return;
@@ -785,15 +823,16 @@
 
     sound.play('draw');
     const won=randomUnit()<0.01;
-    const record={date:localDayKey(),won,code:won?createVoucherCode():'',drawnAt:Date.now()};
-    writeDailyDrawRecord(record);
+    const attempt={won,code:won?createVoucherCode():'',drawnAt:Date.now()};
+    appendTodayDrawAttempt(attempt);
     updateDailyDrawUI();
+    const remaining=getRemainingDrawCount();
 
     if(won){
-      setDrawModal({icon:'🎫',title:'恭喜中奖！',copy:'你抽中了100元抵扣券，请截图保存兑奖码。',code:record.code,button:'收下奖励'});
+      setDrawModal({icon:'🎫',title:'恭喜中奖！',copy:`你抽中了100元抵扣券，请截图保存兑奖码。今日还剩 ${remaining} 次机会。`,code:attempt.code,button:'收下奖励'});
       setTimeout(()=>sound.play('drawWin'),900);
     }else{
-      setDrawModal({icon:'🍄',title:'本次未中奖',copy:'今天的抽奖机会已使用，明天通过第一关后可再次参与。'});
+      setDrawModal({icon:'🍄',title:'本次未中奖',copy:remaining>0?`别灰心，今天还剩 ${remaining} 次抽奖机会。`:'今天的3次抽奖机会已用完，明天通过第一关后可再次参与。'});
       setTimeout(()=>sound.play('drawLose'),900);
     }
   }
